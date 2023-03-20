@@ -57,6 +57,26 @@ defmodule TodoList do
     ServerProcess.start(TodoList)
   end
 
+  def create(pid, entry) do
+    ServerProcess.cast(pid, {:create, entry})
+  end
+
+  def read(pid, id) do
+    ServerProcess.call(pid, {:get, id})
+  end
+
+  def read(pid) do
+    ServerProcess.call(pid, {:get_all})
+  end
+
+  def update(pid, id, updater_fun) do
+    ServerProcess.cast(pid, {:update, id, updater_fun})
+  end
+
+  def delete(pid, id) do
+    ServerProcess.cast(pid, {:delete, id})
+  end
+
   # server process
 
   def init(), do: %TodoList{}
