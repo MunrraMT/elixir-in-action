@@ -1,7 +1,5 @@
 defmodule Teste do
   def call(index) do
-    t0 = System.monotonic_time(:millisecond)
-
     case File.read("teste.txt") do
       {:ok, content} ->
         content
@@ -12,7 +10,6 @@ defmodule Teste do
         |> removed_number_ten()
         |> multiplied_for_ten(index)
         |> result_sum()
-        |> return_total(t0)
 
       {:error, reason} ->
         IO.puts(reason)
@@ -56,12 +53,8 @@ defmodule Teste do
     |> Enum.reduce(0, fn number, accumulator ->
       accumulator + number
     end)
-  end
 
-  defp return_total(number, t0) do
-    t1 = System.monotonic_time(:millisecond)
-    timer = t1 - t0
-    %{time: timer, result_sum: number}
+    %{result_sum: list}
   end
 end
 
@@ -129,24 +122,33 @@ defmodule Parallel do
   end
 end
 
-total =
-  Parallel.map(1..1_000, &Teste.call/1, size: 1)
-  |> Enum.reduce(
-    %{result_sum: 0, time: 0},
-    fn current, acc ->
-      total_sum = current.result_sum + acc.result_sum
-      total_time = current.time + acc.time
+{time_sql, _result} =
+  :timer.tc(fn -> Enum.map(1..50_000, fn number -> Teste.call(number) end) end)
 
-      %{result_sum: total_sum, time: total_time}
-    end
-  )
+IO.puts("tempo sql: #{time_sql / 1000}ms")
+# 320_433ms
 
-IO.inspect(total)
+{time_1, _result} = :timer.tc(fn -> Parallel.map(1..50_000, &Teste.call/1, size: 1) end)
 
-# 289726ms 4p
-# 252551ms 3p
-# 219887ms 2p
-# 199219ms 1p
-# 554707ms default
+IO.puts("tempo 1: #{time_1 / 1000}ms")
+# 418_211ms
 
-# 8153ms
+{time_2, _result} = :timer.tc(fn -> Parallel.map(1..50_000, &Teste.call/1, size: 2) end)
+
+IO.puts("tempo 2: #{time_2 / 1000}ms")
+# 217_376ms
+
+{time_3, _result} = :timer.tc(fn -> Parallel.map(1..50_000, &Teste.call/1, size: 3) end)
+
+IO.puts("tempo 3: #{time_3 / 1000}ms")
+# 166_072ms
+
+{time_4, _result} = :timer.tc(fn -> Parallel.map(1..50_000, &Teste.call/1, size: 4) end)
+
+IO.puts("tempo 4: #{time_4 / 1000}ms")
+# 151_457ms
+
+{time_default, _result} = :timer.tc(fn -> Parallel.map(1..50_000, &Teste.call/1) end)
+
+IO.puts("tempo default: #{time_default / 1000}ms")
+# 152_915ms
