@@ -1,7 +1,5 @@
 defmodule Teste do
   def call(index) do
-    t1 = System.monotonic_time(:millisecond)
-
     case File.read("teste.txt") do
       {:ok, content} ->
         content
@@ -12,14 +10,10 @@ defmodule Teste do
         |> removed_number_ten()
         |> multiplied_for_ten(index)
         |> result_sum()
-        |> IO.inspect()
 
       {:error, reason} ->
         IO.puts(reason)
     end
-
-    t2 = System.monotonic_time(:millisecond)
-    t2 - t1
   end
 
   defp lower_cased(text), do: String.downcase(text)
@@ -51,7 +45,6 @@ defmodule Teste do
   end
 
   defp multiplied_for_ten(list, index) do
-    list |> length() |> IO.puts()
     list |> Enum.map(fn number -> number * index end)
   end
 
@@ -60,55 +53,12 @@ defmodule Teste do
     |> Enum.reduce(0, fn number, accumulator ->
       accumulator + number
     end)
+
+    %{result_sum: list}
   end
 end
 
-defmodule TesteServer do
-  use GenServer
+{time_sql, _result} = :timer.tc(fn -> Teste.call(1) end)
 
-  def start() do
-    GenServer.start(__MODULE__, nil, name: __MODULE__)
-  end
-
-  def increase(number) do
-    GenServer.cast(__MODULE__, number)
-  end
-
-  def result() do
-    GenServer.call(__MODULE__, :get)
-  end
-
-  @impl GenServer
-  def init(_) do
-    {:ok, 0}
-  end
-
-  @impl GenServer
-  def handle_cast(number, state) do
-    {:noreply, number + state}
-  end
-
-  @impl GenServer
-  def handle_call(:get, _, state) do
-    {:reply, state, state}
-  end
-end
-
-defmodule Parallel do
-  def pmap(collection, func) do
-    collection
-    |> Enum.map(&Task.async(fn -> func.(&1) end))
-    |> Enum.map(&Task.await/1)
-  end
-end
-
-# Parallel.pmap(1..100, &Teste.call(&1))
-
-TesteServer.start()
-
-1..25_000 |> Enum.each(fn number -> TesteServer.increase(Teste.call(number)) end)
-
-total = TesteServer.result()
-IO.puts("Total: #{total}")
-
-# 853ms
+IO.puts("tempo 1x: #{time_sql / 1000}ms")
+# 18ms

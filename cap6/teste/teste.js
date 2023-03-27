@@ -39,11 +39,21 @@ const teste = (index) => {
 };
 
 const t1 = Date.now();
-for (let index = 0; index < 50_000; index++) {
+for (let index = 0; index < 1; index++) {
   teste(index);
 }
 const t2 = Date.now();
 const timer = t2 - t1;
 
-console.log(`tempo: ${timer}ms`);
+console.log(`tempo 1: ${timer}ms`);
+// tempo: 5ms
+
+const t3 = Date.now();
+for (let index = 0; index < 50_000; index++) {
+  teste(index);
+}
+const t4 = Date.now();
+const timer2 = t4 - t3;
+
+console.log(`tempo 50k: ${timer2}ms`);
 // tempo: 34_197ms
