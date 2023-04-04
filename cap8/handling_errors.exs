@@ -45,3 +45,16 @@ spawn(fn ->
     msg -> IO.inspect(msg)
   end
 end)
+
+# Um processo fica monitorando outro processo aguardando uma possível quebra
+
+target_pid =
+  spawn(fn ->
+    Process.sleep(1000)
+  end)
+
+Process.monitor(target_pid)
+
+receive do
+  msg -> IO.inspect(msg)
+end
