@@ -5,9 +5,9 @@ defmodule Todo.Database do
 
   # client process
 
-  def start do
+  def start_link() do
     IO.puts("starting database server!")
-    GenServer.start(__MODULE__, nil, name: __MODULE__)
+    GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
 
   def store(key, data) do
@@ -36,13 +36,13 @@ defmodule Todo.Database do
 
   @impl GenServer
   def handle_call({:choose_worker, key}, _caller, workers) do
-    worker_key = :erlang.phash2(key, 3)
+    worker_key = :erlang.phash2(key, 4)
     {:reply, Map.get(workers, worker_key), workers}
   end
 
   defp start_workers() do
-    for index <- 0..2, into: %{} do
-      {:ok, pid} = Todo.DatabaseWorker.start(@db_folder)
+    for index <- 1..4, into: %{} do
+      {:ok, pid} = Todo.DatabaseWorker.start_link(@db_folder)
       {index, pid}
     end
   end
