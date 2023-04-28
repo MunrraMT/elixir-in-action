@@ -42,7 +42,7 @@ defmodule Todo.Database do
 
   defp start_workers() do
     for index <- 1..4, into: %{} do
-      {:ok, pid} = Todo.DatabaseWorker.start_link(@db_folder)
+      {:ok, pid} = Todo.DatabaseWorker.start_link({@db_folder, index})
       {index, pid}
     end
   end
