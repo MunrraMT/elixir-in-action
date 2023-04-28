@@ -5,7 +5,7 @@ defmodule Todo.Database do
 
   # client process
 
-  def start_link() do
+  def start_link(_) do
     IO.puts("starting database server!")
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
