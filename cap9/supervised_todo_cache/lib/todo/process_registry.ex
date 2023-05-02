@@ -1,5 +1,6 @@
 defmodule Todo.ProcessRegistry do
   def start_link do
+    IO.puts("starting process registry!")
     Registry.start_link(keys: :unique, name: __MODULE__)
   end
 
