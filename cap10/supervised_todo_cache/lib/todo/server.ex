@@ -1,45 +1,33 @@
 defmodule Todo.Server do
-  use GenServer, restart: :temporary
+  use Agent, restart: :temporary
 
   # client process
 
   def start_link(list_name) do
-    IO.puts("Starting to-do server for #{list_name}!")
-    GenServer.start_link(__MODULE__, list_name, name: via_tuple(list_name))
+    Agent.start_link(
+      fn ->
+        IO.puts("Starting to-do agent for #{list_name}!")
+        {list_name, Todo.Database.get(list_name) || Todo.List.new()}
+      end,
+      name: via_tuple(list_name)
+    )
   end
 
   def add_entry(todo_server, new_entry) do
-    GenServer.cast(todo_server, {:add_entry, new_entry})
+    Agent.cast(todo_server, fn {list_name, todo_list} ->
+      new_state = Todo.List.add_entry(todo_list, new_entry)
+      Todo.Database.store(list_name, new_state)
+      {list_name, new_state}
+    end)
   end
 
   def entries(todo_server, date) do
-    GenServer.call(todo_server, {:entries, date})
+    Agent.get(todo_server, fn {_name, todo_list} ->
+      Todo.List.entries(todo_list, date)
+    end)
   end
 
   defp via_tuple(name) do
     Todo.ProcessRegistry.via_tuple({__MODULE__, name})
-  end
-
-  # server process
-
-  @impl GenServer
-  def init(list_name) do
-    {:ok, {list_name, Todo.Database.get(list_name) || Todo.List.new()}}
-  end
-
-  @impl GenServer
-  def handle_cast({:add_entry, new_entry}, {list_name, state}) do
-    new_state = Todo.List.add_entry(state, new_entry)
-    Todo.Database.store(list_name, new_state)
-    {:noreply, {list_name, new_state}}
-  end
-
-  @impl GenServer
-  def handle_call({:entries, date}, _, {list_name, state}) do
-    {
-      :reply,
-      Todo.List.entries(state, date),
-      {list_name, state}
-    }
   end
 end
