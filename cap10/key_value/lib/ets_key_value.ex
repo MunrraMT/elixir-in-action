@@ -1,6 +1,8 @@
 defmodule EtsKeyValue do
   use GenServer
 
+  # client side
+
   def start_link do
     GenServer.start_link(__MODULE__, nil, name: __MODULE__)
   end
@@ -16,9 +18,16 @@ defmodule EtsKeyValue do
     end
   end
 
+  # server side
+
   @impl GenServer
   def init(_) do
-    :ets.new(__MODULE__, [:named_table, :public, write_concurrency: true])
+    :ets.new(__MODULE__, [
+      :named_table,
+      :public,
+      write_concurrency: true
+    ])
+
     {:ok, nil}
   end
 end
