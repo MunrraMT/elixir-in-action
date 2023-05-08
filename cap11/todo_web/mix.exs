@@ -26,8 +26,7 @@ defmodule Todo.MixProject do
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
 
       {:poolboy, "~> 1.5"},
-      {:cowboy, "~> 2.1"},
-      {:plug, "1.14"}
+      {:plug_cowboy, "~> 2.6"}
     ]
   end
 end
