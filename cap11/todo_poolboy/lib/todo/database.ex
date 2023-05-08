@@ -2,30 +2,16 @@ defmodule Todo.Database do
   @pool_size 4
   @db_folder "./persist"
 
-  # client process
-
-  def start_link() do
-    IO.puts("starting database module!")
-    File.mkdir_p!(@db_folder)
-
-    children = Enum.map(1..@pool_size, &worker_spec/1)
-
-    Supervisor.start_link(
-      children,
-      strategy: :one_for_one,
-      name: __MODULE__
-    )
-  end
-
   def child_spec(_) do
     File.mkdir_p!(@db_folder)
+    IO.puts("starting database!")
 
     :poolboy.child_spec(
       __MODULE__,
       [
         name: {:local, __MODULE__},
         worker_module: Todo.DatabaseWorker,
-        size: 4
+        size: @pool_size
       ],
       [@db_folder]
     )
@@ -47,10 +33,5 @@ defmodule Todo.Database do
         Todo.DatabaseWorker.get(worker_pid, key)
       end
     )
-  end
-
-  defp worker_spec(worker_id) do
-    default_worker_spec = {Todo.DatabaseWorker, {@db_folder, worker_id}}
-    Supervisor.child_spec(default_worker_spec, id: worker_id)
   end
 end

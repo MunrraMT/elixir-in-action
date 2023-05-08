@@ -4,7 +4,7 @@ defmodule Todo.System do
   # client side
 
   def start_link() do
-    Supervisor.start_link(__MODULE__, nil)
+    Supervisor.start_link(__MODULE__, nil, name: __MODULE__)
   end
 
   # server side
@@ -12,10 +12,10 @@ defmodule Todo.System do
   def init(_) do
     Supervisor.init(
       [
-        Todo.Metrics,
         Todo.ProcessRegistry,
         Todo.Database,
-        Todo.Cache
+        Todo.Cache,
+        Todo.Metrics
       ],
       strategy: :one_for_one
     )
